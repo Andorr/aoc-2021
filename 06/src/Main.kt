@@ -6,31 +6,27 @@ fun main() {
 		.split(",")
 		.map { it -> it.toLong() }
 
-	println("Part 01: ${calcNumLaternFishes(input, 80)}")
-	println("Part 02: ${calcNumLaternFishes(input, 256)}")
+	println("Part 01: ${calcNumLanternFish(input, 80)}")
+	println("Part 02: ${calcNumLanternFish(input, 256)}")
 }
 
-fun calcNumLaternFishes(input: List<Long>, target: Long): Long {
-	var numbers = arrayOf<Long>(0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L)
-	input.forEach { numbers[it.toInt()] += 1L }
+fun calcNumLanternFish(input: List<Long>, target: Long): Long {
+	var state = LongArray(9){ 0L }
+	input.forEach { state[it.toInt()] += 1L }
 
-	var day = 0L
-	while(day < target) {
-		day++
-
-		val current = arrayOf<Long>(0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L)
-		for(i in numbers.indices) {
+	(0 until target).forEach { _ ->
+		state = state.indices.fold(LongArray(9){ 0L }) { newState, i ->
 			when(i) {
 				0 -> {
-					current[8] += numbers[i]
-					current[6] += numbers[i]
+					newState[8] += state[i]
+					newState[6] += state[i]
 				}
 				else -> {
-					current[i-1] += numbers[i]
+					newState[i-1] += state[i]
 				}
 			}
+			newState
 		}
-		numbers = current
 	}
-	return numbers.sum()
+	return state.sum()
 }
