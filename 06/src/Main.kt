@@ -1,4 +1,6 @@
 import java.io.File
+import java.util.*
+import kotlin.system.measureTimeMillis
 
 fun main() {
 	val input = File("input.txt")
@@ -11,22 +13,12 @@ fun main() {
 }
 
 fun calcNumLanternFish(input: List<Long>, target: Long): Long {
-	var state = LongArray(9){ 0L }
+	val state = LongArray(9){ 0L }.toMutableList()
 	input.forEach { state[it.toInt()] += 1L }
 
 	(0 until target).forEach { _ ->
-		state = state.indices.fold(LongArray(9){ 0L }) { newState, i ->
-			when(i) {
-				0 -> {
-					newState[8] += state[i]
-					newState[6] += state[i]
-				}
-				else -> {
-					newState[i-1] += state[i]
-				}
-			}
-			newState
-		}
+		Collections.rotate(state, -1)
+		state[6] += state[8]
 	}
 	return state.sum()
 }
