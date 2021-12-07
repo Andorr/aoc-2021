@@ -24,6 +24,6 @@ fun part02(input: List<Long>): Long {
 	val max = input.maxOf { it }
 
 	return (min..max).map { i ->
-		input.sumOf { (1..(it - i).absoluteValue).sum() }
+		input.sumOf { (it - i).absoluteValue*((it - i).absoluteValue + 1L)/2L } // 1 + 2 + ... + n = n*(n + 1) / 2
 	}.minOf { it }
 }
