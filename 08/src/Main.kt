@@ -20,13 +20,17 @@ fun part01(input: List<Entry>): Long {
 
 fun part02(input: List<Entry>): Long {
 
+	fun matches(a: String, b: String): Long {
+		return a.count { c -> b.contains(c) }.toLong()
+	}
+
 	return input.sumOf { entry ->
 		val m = mutableMapOf<Long, String>()
 
-		m[1] = entry.input.filter { it.length == 2 }.first()
-		m[4] = entry.input.filter { it.length == 4 }.first()
-		m[7] = entry.input.filter { it.length == 3 }.first()
-		m[8] = entry.input.filter { it.length == 7 }.first()
+		m[1] = entry.input.first { it.length == 2 }
+		m[4] = entry.input.first { it.length == 4 }
+		m[7] = entry.input.first { it.length == 3 }
+		m[8] = entry.input.first { it.length == 7 }
 
 		m[2] = entry.input.filter { it.length == 5 }.first { matches(it, m.getValue(4)) == 2L }
 		m[3] = entry.input.filter { it.length == 5 }.first { matches(it, m.getValue(1)) == 2L }
@@ -40,10 +44,6 @@ fun part02(input: List<Entry>): Long {
 			m.filter { it.value.length == o.length && matches(it.value, o).toInt() == o.length }.keys.first().toString()
 		}.toLong()
 	}
-}
-
-fun matches(a: String, b: String): Long {
-	return a.count { c -> b.contains(c) }.toLong()
 }
 
 fun parse(filename: String): List<Entry> {
