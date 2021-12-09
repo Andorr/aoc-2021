@@ -20,6 +20,7 @@ fun part01(input: List<Entry>): Long {
 
 fun part02(input: List<Entry>): Long {
 
+	// Counts the number of common characters
 	fun matches(a: String, b: String): Long {
 		return a.count { c -> b.contains(c) }.toLong()
 	}
