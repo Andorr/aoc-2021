@@ -1,5 +1,6 @@
 import java.io.File
 import java.util.*
+import kotlin.system.measureTimeMillis
 
 typealias Pos = Pair<Int, Int>
 
@@ -41,10 +42,11 @@ fun dijkstra(input: List<List<Int>>, start: Pos, end: Pos, maxX: Int = input[0].
 		}
 
 		curPos.neighbours(maxX, maxY).minus(visited).forEach { neighbour ->
-			val newCost = curCost + neighbour.risk(input)
+			val newCost = cost[curPos]!! + neighbour.risk(input)
 			if(newCost < cost.getOrDefault(neighbour, Int.MAX_VALUE)) {
+				val distance = (end.first - neighbour.first) + (end.second - neighbour.second)
 				cost[neighbour] = newCost
-				queue.add(Pair(neighbour, newCost))
+				queue.add(Pair(neighbour, newCost + distance))
 			}
 		}
 	}
