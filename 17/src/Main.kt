@@ -1,3 +1,5 @@
+import kotlin.math.absoluteValue
+import kotlin.math.max
 
 data class Vec(var x: Int, var y: Int)
 data class Bound(val from: Int, val to: Int)
@@ -13,34 +15,25 @@ fun main() {
 }
 
 fun part01(bounds: Bounds): Int {
-	var bestY = 0
-	main@ for(x in (1..bounds.x.to)) {
-		var y = 1
-		while(y < 1000) {
-			var result = simulate(Vec(0, 0), Vec(x, y), bounds)
-			if(result.success && result.maxY > bestY) {
-				bestY = result.maxY
-			}
-			y++
-		}
-	}
-	return bestY
+	// Since the max height revolves around reaching v_y = 0, and let if fall down again
+	// the x-coord does not matter. So it is all about how large y-velocity we decide to through the ball up
+	// in the air that decides the height. At whatever v_y we choose, when the probe falls down again
+	// and reaches y = 0, the v_y == -v0_y. Therefore, we want that the next v_y should be min_y.
+	// This means that v0_y must be abs(min_y) - 1, since a_y = -1. Falling from max height with v_y = 0 to
+	// v_y = abs(min_y) gives a height of H = 1+2+3+4..(min_y-1)+(min_y) = (min_y+1)*min_y/2.
+	val minY = bounds.y.from
+	return (minY + 1)*minY/2
 }
 
 fun part02(bounds: Bounds): Int {
-	val velocities = mutableSetOf<Vec>()
-
-	main@ for(x in (-bounds.x.to..bounds.x.to)) {
-		var y = bounds.y.from
-		while(y < 1000) {
-			val result = simulate(Vec(0, 0), Vec(x, y), bounds)
-			if(result.success) {
-				velocities.add(Vec(x, y))
-			}
-			y++
-		}
+	return (1..bounds.x.to).map { x ->
+		(bounds.y.from..bounds.y.from.absoluteValue)
+		.map { y -> Pair(x, y) }
 	}
-	return velocities.size
+		.flatten()
+		.count { (x, y) ->
+			simulate(Vec(0, 0), Vec(x,y), bounds).success
+		}
 }
 
 fun simulate(start: Vec, velocity: Vec, bounds: Bounds): Result {
@@ -48,10 +41,8 @@ fun simulate(start: Vec, velocity: Vec, bounds: Bounds): Result {
 	val position = Vec(start.x, start.y)
 	var maxY = position.y
 
-	var step = 0
 	var boundsState = position.bounds(bounds.x, bounds.y)
 	while(boundsState.x != 1 && boundsState.y != 1) {
-
 		position.x += velocity.x
 		position.y += velocity.y
 
@@ -60,20 +51,15 @@ fun simulate(start: Vec, velocity: Vec, bounds: Bounds): Result {
 		}
 
 		boundsState = position.bounds(bounds.x, bounds.y)
-		if(boundsState.x == 0 && boundsState.y == 0) {
-			return Result(true, maxY)
-		}
-		if(boundsState.x >= 1 || boundsState.y >= 1) {
-			return Result(false, maxY)
+		if(boundsState.x != -1 && boundsState.y != -1) {
+			return Result(boundsState.x == 0 && boundsState.y == 0, maxY)
 		}
 
-		velocity.x = velocity.x.towardsZero(1)
+		velocity.x = max(0, velocity.x.dec())
 		velocity.y = velocity.y.dec()
-
-		step++
 	}
 
-	return Result(false, maxY)
+	return Result(boundsState.x == 0 && boundsState.y == 0, maxY)
 }
 
 fun Vec.bounds(boundX: Bound, boundY: Bound): Vec {
@@ -81,8 +67,3 @@ fun Vec.bounds(boundX: Bound, boundY: Bound): Vec {
 	val by = if(this.y > boundY.to) -1 else if(this.y >= boundY.from) 0 else 1
 	return Vec(bx, by)
 }
-
-fun Int.towardsZero(step: Int): Int {
-	return if(this > 0) this - step else if(this < 0 ) this + step else 0
-}
-
