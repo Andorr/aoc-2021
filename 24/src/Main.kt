@@ -1,3 +1,4 @@
+import java.io.File
 
 // The input consist of 14 segments of these code chunks.
 //
@@ -20,30 +21,29 @@
 // By construction a map of pairs from A, and then looking for values of w_i and w_k that satisfy the condition,
 // we are able to construct our number.
 
+data class MonadProgram(val a: IntArray, val b: IntArray, val c: IntArray)
+
 fun main() {
 
-	var A = listOf(1, 1, 1, 1, 26, 1, 26, 26, 1, 26, 1, 26, 26, 26)
-	var B = listOf(10, 15, 14, 15, -8, 10, -16, -4, 11, -3, 12, -7, -15, -7)
-	var C = listOf(2, 16, 9, 0, 1, 12, 6, 6, 3, 5, 9, 3, 2, 3)
-	var W = listOf(9, 9, 9, 9, 1, 9, 2, 4, 9, 9, 9, 8, 8, 3)
+	val program = parse("input.txt")
 
-	// Construed by A:
-	var pairs = mapOf(
-		3 to 4,
-		5 to 6,
-		2 to 7,
-		8 to 9,
-		10 to 11,
-		1 to 12,
-		0 to 13
-	)
+	// Calculate the pairs
+	val pairs = mutableMapOf<Int, Int>()
+	val stack = mutableListOf<Int>()
+	program.a.forEachIndexed { i, it ->
+		if(it == 1) {
+			stack.add(i)
+		} else {
+			pairs[stack.removeLast()] = i
+		}
+	}
 
 	// Part 01: Largest number - begin high
 	var number = IntArray(14) { 0 }
 	for (r in pairs) {
 		var w1 = 9
 		var w2 = 9
-		while(w1 + C[r.key] + B[r.value] != w2) {
+		while(w1 + program.c[r.key] + program.b[r.value] != w2) {
 			if(w2 == 1) {
 				w1--
 				w2 = 9
@@ -62,7 +62,7 @@ fun main() {
 	for (r in pairs) {
 		var w1 = 1
 		var w2 = 1
-		while(w1 + C[r.key] + B[r.value] != w2) {
+		while(w1 + program.c[r.key] + program.b[r.value] != w2) {
 			if(w2 == 9) {
 				w1++
 				w2 = 1
@@ -76,4 +76,17 @@ fun main() {
 		}
 	}
 	println("Part02: ${number.joinToString("")}")
+}
+
+fun parse(fileName: String): MonadProgram {
+	return File(fileName)
+		.readLines()
+		.chunked(18)
+		.let { lines ->
+			MonadProgram(
+				lines.map{ chunk -> chunk[4].split(" ")[2].toInt()}.toIntArray(),
+				lines.map{ chunk -> chunk[5].split(" ")[2].toInt()}.toIntArray(),
+				lines.map{ chunk -> chunk[15].split(" ")[2].toInt()}.toIntArray()
+			)
+		}
 }
